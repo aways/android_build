@@ -101,8 +101,10 @@ GRANDFATHERED_ALL_PREBUILT := \
 	wl1271.bin \
 	zoneinfo.dat \
 	zoneinfo.idx \
-	zoneinfo.version \
-ifeq($(TARGET_BOOTLOADER_TYPE),uboot)
+	zoneinfo.version
+
+ifeq ($(TARGET_BOOTLOADER_TYPE),uboot)
+GRANDFATHERED_ALL_PREBUILT += \
 	build-uboot \
 	build-mkenvimg
 endif
