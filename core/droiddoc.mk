@@ -20,6 +20,9 @@
 ##
 ##
 
+ifneq ($(TARGET_OMIT_DOCS),true)
+doc-comment-check-docs:
+else
 LOCAL_IS_HOST_MODULE := $(call true-or-empty,$(LOCAL_IS_HOST_MODULE))
 ifeq ($(LOCAL_IS_HOST_MODULE),true)
 my_prefix:=HOST_
@@ -230,4 +233,5 @@ $(out_zip): $(full_target)
 
 $(call dist-for-goals,docs,$(out_zip))
 
+endif
 endif
