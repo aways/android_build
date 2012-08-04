@@ -137,7 +137,9 @@ PRODUCT_PACKAGES += \
     zoneinfo.idx \
     zoneinfo.version \
     wpa_supplicant.conf \
-    x264
+    x264 \
+    aibd \
+    aib
 
 PRODUCT_COPY_FILES += \
     system/core/rootdir/init.usb.rc:root/init.usb.rc \
