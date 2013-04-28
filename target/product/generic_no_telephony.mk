@@ -32,8 +32,7 @@ PRODUCT_PACKAGES := \
     FusedLocation \
     Gallery2 \
     InputDevices \
-    Music \
-    MusicFX \
+    Provision \
     Phone \
     Settings \
     SystemUI \
@@ -68,6 +67,9 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_COPY_FILES := \
         frameworks/av/media/libeffects/data/audio_effects.conf:system/etc/audio_effects.conf
+
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.carrier=unknown
 
 $(call inherit-product-if-exists, frameworks/base/data/fonts/fonts.mk)
 $(call inherit-product-if-exists, external/cibu-fonts/fonts.mk)
