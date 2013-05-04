@@ -646,7 +646,7 @@ function tapas()
 function eat()
 {
     if [ "$OUT" ] ; then
-        MODVERSION=`sed -n -e'/ro\.crom\.version/s/.*=//p' $OUT/system/build.prop`
+        MODVERSION=$(get_build_var CROM_VERSION)
         ZIPFILE=crom-$MODVERSION.zip
         ZIPPATH=$OUT/$ZIPFILE
         if [ ! -f $ZIPPATH ] ; then
