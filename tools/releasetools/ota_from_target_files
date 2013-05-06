@@ -418,16 +418,15 @@ def WriteFullOTAPackage(input_zip, output_zip):
   if OPTIONS.wipe_user_data:
     script.FormatPartition("/data")
 
-  script.Print("*********************************************************");
-  script.Print("*   *****         *  ******   ****   ****** **      *   *");
-  script.Print("*  *             **  *    *   *   *  *    * ***     *   *");
-  script.Print("* *             * *  *   *    *    * *    * *  *    *   *");
-  script.Print("* *            *  *  *  *     *   *  *    * *   *   *   *");
-  script.Print("* *           *****  * *      * * *  *    * *    *  *   *");
-  script.Print("*  *         *    *  *  *     *   *  *    * *     * *   *");
-  script.Print("*   *       *     *  *    *   *    * *    * *      **   *");
-  script.Print("*    ***** *      *  *      * *****  ****** *       *   *");
-  script.Print("*********************************************************");
+  script.Print(" ____              ____                        ");
+  script.Print("/\  _`\           /\  _`\           /'\_/`\    ");
+  script.Print("\ \ \/\_\         \ \ \L\ \    ___ /\      \   ");
+  script.Print(" \ \ \/_/_  _______\ \ ,  /   / __`\ \ \__\ \  ");
+  script.Print("  \ \ \L\ \/\______\\ \ \\ \ /\ \L\ \ \ \_/\ \ ");
+  script.Print("   \ \____/\/______/ \ \_\ \_\ \____/\ \_\\ \_\");
+  script.Print("    \/___/            \/_/\/ /\/___/  \/_/ \/_/");
+  script.Print("                                               ");
+  script.Print("                                               ");
 
   script.Print("Erasing System...")
 
