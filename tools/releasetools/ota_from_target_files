@@ -419,9 +419,9 @@ def WriteFullOTAPackage(input_zip, output_zip):
     script.FormatPartition("/data")
 
   script.Print("                                             ");
-  script.Print(" ____ _____  ____  __  __   __  __  _ __  __ ");
-  script.Print("/ (__`| () )/ () \|  \/  | |  \/  || |\ \/ / ");
-  script.Print("\____)|_|\_\\____/|_|\/|_| |_|\/|_||_|/_/\_\ ");
+  script.Print(" ____ _____   ____  __  __   __  __  _ __  __ ");
+  script.Print("/ (__`| () ) / () \|  \/  | |  \/  || |\ \/ / ");
+  script.Print("\____)|_|\_\ \____/|_|\/|_| |_|\/|_||_|/_/\_\ ");
   script.Print("                                             ");
 
   script.Print("Erasing System...")
