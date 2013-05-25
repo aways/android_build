@@ -1326,7 +1326,8 @@ if [ "x$SHELL" != "x/bin/bash" ]; then
 fi
 
 # Execute the contents of any vendorsetup.sh files we can find.
-for f in `/bin/ls vendor/*/vendorsetup.sh vendor/*/*/vendorsetup.sh device/*/*/vendorsetup.sh 2> /dev/null`
+# Back up - vendor/*/*/vendorsetup.sh device/*/*/vendorsetup.sh
+for f in `/bin/ls vendor/crom/vendorsetup.sh 2> /dev/null`
 
 do
     echo "including $f"
