@@ -23,6 +23,7 @@ PRODUCT_PACKAGES += \
     BackupRestoreConfirmation \
     BasicDreams \
     Browser \
+    CalendarProvider \
     Contacts \
     ContactsProvider \
     DefaultContainerService \
