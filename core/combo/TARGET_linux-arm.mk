@@ -66,17 +66,10 @@ endif
 
 TARGET_NO_UNDEFINED_LDFLAGS := -Wl,--no-undefined
 
-TARGET_arm_CFLAGS :=    -O2 \
-                        -fgcse-after-reload \
-                        -fipa-cp-clone \
-                        -fpredictive-commoning \
-                        -fsched-spec-load \
-                        -funswitch-loops \
-                        -fvect-cost-model \
+TARGET_arm_CFLAGS :=    -O3 \
                         -fomit-frame-pointer \
-                        -fstrict-aliasing \
-                        -Wstrict-aliasing=3 \
-                        -Werror=strict-aliasing
+                        -fstrict-aliasing    \
+                        -funswitch-loops
 
 # Modules can choose to compile some source as thumb. As
 # non-thumb enabled targets are supported, this is treated
@@ -84,16 +77,10 @@ TARGET_arm_CFLAGS :=    -O2 \
 # compiled as ARM.
 ifeq ($(ARCH_ARM_HAVE_THUMB_SUPPORT),true)
 TARGET_thumb_CFLAGS :=  -mthumb \
-                        -Os \
-                        -fgcse-after-reload \
-                        -fipa-cp-clone \
-                        -fpredictive-commoning \
-                        -fsched-spec-load \
-                        -funswitch-loops \
-                        -fvect-cost-model \
+                        -O3 \
                         -fomit-frame-pointer \
-                        -fno-strict-aliasing \
-                        -Wstrict-aliasing=3 \
+                        -fstrict-aliasing \
+                        -Wstrict-aliasing=2 \
                         -Werror=strict-aliasing
 else
 TARGET_thumb_CFLAGS := $(TARGET_arm_CFLAGS)
@@ -141,7 +128,7 @@ TARGET_GLOBAL_CFLAGS += $(TARGET_ANDROID_CONFIG_CFLAGS)
 # We cannot turn it off blindly since the option is not available
 # in gcc-4.4.x.  We also want to disable sincos optimization globally
 # by turning off the builtin sin function.
-ifneq ($(filter 4.6 4.7 4.6.% 4.7.%, $(shell $(TARGET_CC) --version)),)
+ifneq ($(filter 4.6 4.6.% 4.7 4.7%, $(shell $(TARGET_CC) --version)),)
 TARGET_GLOBAL_CFLAGS += -Wno-unused-but-set-variable -fno-builtin-sin \
 			-fno-strict-volatile-bitfields
 endif
@@ -179,22 +166,20 @@ TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden
 # More flags/options can be added here
 ifndef TARGET_EXTRA_CFLAGS
   TARGET_RELEASE_CFLAGS := \
-        -DNDEBUG \
-        -g \
-        -Wstrict-aliasing=3 \
-        -Werror=strict-aliasing \
-        -fgcse-after-reload \
-        -frerun-cse-after-loop \
-        -frename-registers
+			  -DNDEBUG \
+			  -g \
+			  -Wstrict-aliasing=2 \
+			  -fgcse-after-reload \
+			  -frerun-cse-after-loop \
+			  -frename-registers
 else
   TARGET_RELEASE_CFLAGS += \
-        -DNDEBUG \
-        -g \
-        -Wstrict-aliasing=3 \
-        -Werror=strict-aliasing \
-        -fgcse-after-reload \
-        -frerun-cse-after-loop \
-        -frename-registers
+			  -DNDEBUG \
+			  -g \
+			  -Wstrict-aliasing=2 \
+			  -fgcse-after-reload \
+			  -frerun-cse-after-loop \
+			  -frename-registers
 endif
 
 libc_root := bionic/libc
