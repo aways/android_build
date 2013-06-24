@@ -34,6 +34,12 @@ ifeq ($(strip $(TARGET_ARCH_VARIANT)),)
 TARGET_ARCH_VARIANT := armv5te
 endif
 
+ifeq ($(strip $(TARGET_GCC_VERSION_EXP)),)
+TARGET_GCC_VERSION := 4.7
+else
+TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
+endif
+
 TARGET_ARCH_SPECIFIC_MAKEFILE := $(BUILD_COMBOS)/arch/$(TARGET_ARCH)/$(TARGET_ARCH_VARIANT).mk
 ifeq ($(strip $(wildcard $(TARGET_ARCH_SPECIFIC_MAKEFILE))),)
 $(error Unknown ARM architecture version: $(TARGET_ARCH_VARIANT))
@@ -66,44 +72,39 @@ endif
 
 TARGET_NO_UNDEFINED_LDFLAGS := -Wl,--no-undefined
 
+ifeq ($(TARGET_USE_O3),true)
 TARGET_arm_CFLAGS :=    -O3 \
-                        -fgcse-after-reload \
-                        -fipa-cp-clone \
-                        -fpredictive-commoning \
-                        -fsched-spec-load \
-                        -funswitch-loops \
-                        -fvect-cost-model \
                         -fomit-frame-pointer \
-                        -fstrict-aliasing    \
-                        -Wstrict-aliasing=3 \
-                        -Werror=strict-aliasing
+                        -fstrict-aliasing \
+                        -funswitch-loops \
+                        -fno-tree-vectorize
+else
+TARGET_arm_CFLAGS :=    -O2 \
+                        -fomit-frame-pointer \
+                        -fno-strict-aliasing    \
+                        -fno-zero-initialized-in-bss \
+                        -funswitch-loops
+endif
 
 # Modules can choose to compile some source as thumb. As
 # non-thumb enabled targets are supported, this is treated
 # as a 'hint'. If thumb is not enabled, these files are just
 # compiled as ARM.
 ifeq ($(ARCH_ARM_HAVE_THUMB_SUPPORT),true)
-TARGET_thumb_CFLAGS :=  -mthumb \
-                        -O3 \
-                        -fomit-frame-pointer \
-                        -fno-strict-aliasing \
-                        -Wstrict-aliasing=2 \
-                        -Werror=strict-aliasing \
-                        -fgcse-after-reload \
-                        -fsched-spec-load \
-                        -funswitch-loops \
-                        -fvect-cost-model \
-                        -fipa-cp-clone \
-                        -pipe
+ifeq ($(TARGET_USE_O3),true)
+    TARGET_thumb_CFLAGS :=  -mthumb \
+                            -O3 \
+                            -fomit-frame-pointer \
+                            -fno-strict-aliasing \
+                            -fno-tree-vectorize
+else
+    TARGET_thumb_CFLAGS :=  -mthumb \
+                            -Os \
+                            -fomit-frame-pointer \
+                            -fno-strict-aliasing
+endif
 else
 TARGET_thumb_CFLAGS := $(TARGET_arm_CFLAGS)
-endif
-
-# Turn off strict-aliasing if we're building an AOSP variant without the
-# patchset...
-ifeq ($(DEBUG_NO_STRICT_ALIASING),yes)
-TARGET_arm_CFLAGS += -fno-strict-aliasing -Wno-error=strict-aliasing
-TARGET_thumb_CFLAGS += -fno-strict-aliasing -Wno-error=strict-aliasing
 endif
 
 # Set FORCE_ARM_DEBUGGING to "true" in your buildspec.mk
@@ -120,38 +121,36 @@ ifeq ($(FORCE_ARM_DEBUGGING),true)
   TARGET_thumb_CFLAGS += -marm -fno-omit-frame-pointer
 endif
 
-ifeq ($(TARGET_DISABLE_ARM_PIE),true)
-   PIE_GLOBAL_CFLAGS :=
-   PIE_EXECUTABLE_TRANSFORM := -Wl,-T,$(BUILD_SYSTEM)/armelf.x
-else
-   PIE_GLOBAL_CFLAGS := -fPIE
-   PIE_EXECUTABLE_TRANSFORM := -fPIE -pie
-endif
-
 TARGET_GLOBAL_CFLAGS += \
-			-msoft-float -fpic $(PIE_GLOBAL_CFLAGS) \
+			-msoft-float -fpic -fPIE \
 			-ffunction-sections \
 			-fdata-sections \
 			-funwind-tables \
 			-fstack-protector \
 			-Wa,--noexecstack \
 			-Werror=format-security \
-			-D_FORTIFY_SOURCE=1 \
+			-D_FORTIFY_SOURCE=2 \
 			-fno-short-enums \
-			-pipe \
 			$(arch_variant_cflags)
 
 android_config_h := $(call select-android-config-h,linux-arm)
 TARGET_ANDROID_CONFIG_CFLAGS := -include $(android_config_h) -I $(dir $(android_config_h))
 TARGET_GLOBAL_CFLAGS += $(TARGET_ANDROID_CONFIG_CFLAGS)
 
-# This warning causes dalvik not to build with gcc 4.6+ and -Werror.
+# This warning causes dalvik not to build with gcc 4.x and -Werror.
 # We cannot turn it off blindly since the option is not available
 # in gcc-4.4.x.  We also want to disable sincos optimization globally
 # by turning off the builtin sin function.
 ifneq ($(filter 4.6 4.6.% 4.7 4.7.%, $(shell $(TARGET_CC) --version)),)
 TARGET_GLOBAL_CFLAGS += -Wno-unused-but-set-variable -fno-builtin-sin \
 			-fno-strict-volatile-bitfields
+ifneq ($(filter 4.7 4.7.%, $(shell $(TARGET_CC) --version)),)
+gcc_variant_ldflags := \
+      -Wl,--enable-new-dtags
+else
+gcc_variant_ldflags := \
+      -Wl,--icf=safe
+endif
 endif
 
 # This is to avoid the dreaded warning compiler message:
@@ -169,8 +168,7 @@ TARGET_GLOBAL_LDFLAGS += \
 			-Wl,-z,relro \
 			-Wl,-z,now \
 			-Wl,--warn-shared-textrel \
-			-Wl,--icf=safe \
-			$(arch_variant_ldflags)
+			$(arch_variant_ldflags) $(gcc_variant_ldflags)
 
 # We only need thumb interworking in cases where thumb support
 # is available in the architecture, and just to be sure, (and
@@ -183,21 +181,12 @@ TARGET_GLOBAL_CFLAGS += -mno-thumb-interwork
 endif
 
 TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden
-ifneq ($(DEBUG_NO_STDCXX11),yes)
-TARGET_GLOBAL_CPPFLAGS += $(call cc-option,-std=gnu++11)
-endif
-
-ifneq ($(DEBUG_NO_STDC11),yes)
-LOCAL_C11_FILES := $(filter %.c, $(LOCAL_SRC_FILES))
-TARGET_GLOBAL_CFLAGS += $(call add-src-files-target-cflags, $(LOCAL_C11_FILES), -std=gnu11)
-endif
 
 # More flags/options can be added here
-TARGET_RELEASE_CFLAGS += \
+TARGET_RELEASE_CFLAGS := \
 			-DNDEBUG \
 			-g \
 			-Wstrict-aliasing=2 \
-			-Werror=strict-aliasing \
 			-fgcse-after-reload \
 			-frerun-cse-after-loop \
 			-frename-registers
@@ -311,7 +300,7 @@ $(hide) $(PRIVATE_CXX) \
 endef
 
 define transform-o-to-executable-inner
-$(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic $(PIE_EXECUTABLE_TRANSFORM) \
+$(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic -fPIE -pie \
 	-Wl,-dynamic-linker,/system/bin/linker \
 	-Wl,--gc-sections \
 	-Wl,-z,nocopyreloc \
