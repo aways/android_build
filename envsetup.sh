@@ -261,7 +261,7 @@ function settitle()
 
 function addcompletions()
 {
-    if [ "${BASH_VERSINFO[0]}" -lt 4 ] ; then
+    if [ "$(uname)" = "Darwin" ] ; then
         return
     fi
 
