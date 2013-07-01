@@ -273,15 +273,13 @@ function addcompletions()
         return
     fi
 
-    dirs="sdk/bash_completion vendor/crom/bash_completion"
-    for dir in $dirs; do
+    dir="sdk/bash_completion"
     if [ -d ${dir} ]; then
         for f in `/bin/ls ${dir}/[a-z]*.bash 2> /dev/null`; do
             echo "including $f"
             . $f
         done
     fi
-    done
 }
 
 function choosetype()
