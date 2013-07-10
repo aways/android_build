@@ -214,6 +214,7 @@ else
         -fgcse-after-reload \
         -frerun-cse-after-loop \
         -frename-registers
+endif
 
 libc_root := bionic/libc
 libm_root := bionic/libm
