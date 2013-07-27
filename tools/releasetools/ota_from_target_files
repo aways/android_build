@@ -418,11 +418,11 @@ def WriteFullOTAPackage(input_zip, output_zip):
   if OPTIONS.wipe_user_data:
     script.FormatPartition("/data")
 
-  script.Print("                                             ");
-  script.Print(" ____ _____   ____  __  __   __  __  _ __  __ ");
-  script.Print("/ (__`| () ) / () \|  \/  | |  \/  || |\ \/ / ");
-  script.Print("\____)|_|\_\ \____/|_|\/|_| |_|\/|_||_|/_/\_\ ");
-  script.Print("                                             ");
+  script.Print("                               ");
+  script.Print("   ____ _____   ____  __  __   ");
+  script.Print("  / (__`| () ) / () \|  \/  |  ");
+  script.Print("  \____)|_|\_\ \____/|_|\/|_|  ");
+  script.Print("                               ");
 
   script.Print("Erasing System...")
 
@@ -433,7 +433,13 @@ def WriteFullOTAPackage(input_zip, output_zip):
   script.Print("Mounting System...")
   script.Mount("/system")
   script.ShowProgress(0.5, 40)
-  script.Print("Installing System...")
+  script.Print("*******************************************")
+  script.Print("*                                         *")
+  script.Print("*                                         *")
+  script.Print("*           INSTALLING C-RoM              *")
+  script.Print("*                                         *")
+  script.Print("*                                         *")
+  script.Print("*******************************************")
   script.UnpackPackageDir("system", "/system")
   script.Print("Creating Symlinks...") 
 
@@ -446,10 +452,24 @@ def WriteFullOTAPackage(input_zip, output_zip):
   Item.GetMetadata(input_zip)
   Item.Get("system").SetPermissions(script)
 
+  script.Print("*******************************************")
+  script.Print("*                                         *")
+  script.Print("*                                         *")
+  script.Print("*             FLASHING KERNEL             *")
+  script.Print("*                                         *")
+  script.Print("*                                         *")
+  script.Print("*******************************************")
   common.CheckSize(boot_img.data, "boot.img", OPTIONS.info_dict)
   common.ZipWriteStr(output_zip, "boot.img", boot_img.data)
   script.ShowProgress(0.2, 0)
 
+  script.Print("*******************************************")
+  script.Print("*                                         *")
+  script.Print("*                                         *")
+  script.Print("*           RUNNING BACKUP TOOL           *")
+  script.Print("*                                         *")
+  script.Print("*                                         *")
+  script.Print("*******************************************")
   if OPTIONS.backuptool:
     script.ShowProgress(0.2, 10)
     script.RunBackup("restore")
@@ -826,6 +846,15 @@ def main(argv):
 
   OPTIONS.target_tmp = OPTIONS.input_tmp
   OPTIONS.info_dict = common.LoadInfoDict(input_zip)
+
+  # If this image was originally labelled with SELinux contexts, make sure we
+  # also apply the labels in our new image. During building, the "file_contexts"
+  # is in the out/ directory tree, but for repacking from target-files.zip it's
+  # in the root directory of the ramdisk.
+  if "selinux_fc" in OPTIONS.info_dict:
+    OPTIONS.info_dict["selinux_fc"] = os.path.join(OPTIONS.input_tmp, "BOOT", "RAMDISK",
+        "file_contexts")
+
   if OPTIONS.verbose:
     print "--- target info ---"
     common.DumpInfoDict(OPTIONS.info_dict)

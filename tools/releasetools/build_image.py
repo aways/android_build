@@ -58,11 +58,27 @@ def BuildImage(in_dir, prop_dict, out_file):
       build_command.append(prop_dict["selinux_fc"])
       build_command.append(prop_dict["mount_point"])
 
-  print "Running: ", " ".join(build_command)
-  p = subprocess.Popen(build_command);
-  p.communicate()
-  return p.returncode == 0
+  exit_code = RunCommand(build_command)
+  if exit_code != 0:
+    return False
 
+  if run_fsck and prop_dict.get("skip_fsck") != "true":
+    # Inflate the sparse image
+    unsparse_image = os.path.join(
+        os.path.dirname(out_file), "unsparse_" + os.path.basename(out_file))
+    inflate_command = ["simg2img", out_file, unsparse_image]
+    exit_code = RunCommand(inflate_command)
+    if exit_code != 0:
+      os.remove(unsparse_image)
+      return False
+
+    # Run e2fsck on the inflated image file
+    e2fsck_command = ["e2fsck", "-f", "-n", unsparse_image]
+    exit_code = RunCommand(e2fsck_command)
+
+    os.remove(unsparse_image)
+
+  return exit_code == 0
 
 def ImagePropFromGlobalDict(glob_dict, mount_point):
   """Build an image property dictionary from the global dictionary.
@@ -81,6 +97,7 @@ def ImagePropFromGlobalDict(glob_dict, mount_point):
       "extfs_sparse_flag",
       "mkyaffs2_extra_flags",
       "selinux_fc",
+      "skip_fsck",
       )
   for p in common_props:
     copy_prop(p, p)
@@ -95,6 +112,9 @@ def ImagePropFromGlobalDict(glob_dict, mount_point):
   elif mount_point == "cache":
     copy_prop("cache_fs_type", "fs_type")
     copy_prop("cache_size", "partition_size")
+  elif mount_point == "vendor":
+    copy_prop("vendor_fs_type", "fs_type")
+    copy_prop("vendor_size", "partition_size")
 
   return d
 
@@ -131,6 +151,8 @@ def main(argv):
     mount_point = "data"
   elif image_filename == "cache.img":
     mount_point = "cache"
+  elif image_filename == "vendor.img":
+    mount_point = "vendor"
   else:
     print >> sys.stderr, "error: unknown image file name ", image_filename
     exit(1)

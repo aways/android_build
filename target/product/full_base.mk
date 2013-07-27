@@ -21,25 +21,45 @@
 
 PRODUCT_PACKAGES := \
     libfwdlockengine \
+    VideoEditor \
     WAPPushManager
+
+
+PRODUCT_PACKAGES += \
+    libvideoeditor_jni \
+    libvideoeditor_core \
+    libvideoeditor_osal \
+    libvideoeditor_videofilters \
+    libvideoeditorplayer
+
+PRODUCT_PACKAGES += \
+    Galaxy4 \
+    HoloSpiralWallpaper \
+    LiveWallpapers \
+    LiveWallpapersPicker \
+    MagicSmokeWallpapers \
+    NoiseField \
+    PhaseBeam \
+    VisualizationWallpapers \
+    PhotoTable
+
+include $(SRC_TARGET_DIR)/product/emulator.mk
 
 # Additional settings used in all AOSP builds
 PRODUCT_PROPERTY_OVERRIDES := \
-    ro.com.android.dateformat=MM-dd-yyyy \
-    ro.config.ringtone=Themos.ogg \
-    ro.config.notification_sound=Castor.ogg
+    ro.com.android.dateformat=MM-dd-yyyy
 
 # Put en_US first in the list, so make it default.
 PRODUCT_LOCALES := en_US
 
 # Get some sounds
-#$(call inherit-product-if-exists, frameworks/base/data/sounds/AllAudio.mk)
+$(call inherit-product-if-exists, frameworks/base/data/sounds/AllAudio.mk)
 
 # Get the TTS language packs
-#$(call inherit-product-if-exists, external/svox/pico/lang/all_pico_languages.mk)
+$(call inherit-product-if-exists, external/svox/pico/lang/all_pico_languages.mk)
 
 # Get a list of languages.
-#$(call inherit-product, $(SRC_TARGET_DIR)/product/locales_full.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/locales_full.mk)
 
 # Get everything else from the parent package
 $(call inherit-product, $(SRC_TARGET_DIR)/product/generic_no_telephony.mk)
